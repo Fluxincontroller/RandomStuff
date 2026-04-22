@@ -1,5 +1,5 @@
 -- Paste your script URL here
-local SCRIPT_URL = "https://pastebin.com/raw/your_link_here"
+local SCRIPT_URL = "https://raw.githubusercontent.com/Fluxincontroller/RandomStuff/refs/heads/main/reloadshi"
 
 -- Print when the script initially runs
 print("[Teleport Persistence] Script loaded.")
