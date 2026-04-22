@@ -1,0 +1,45 @@
+local SCRIPT_URL = "https://raw.githubusercontent.com/Fluxincontroller/RandomStuff/refs/heads/main/reloadshi"
+
+local ENABLED = true          -- set to false to disable persistence
+local hasQueued = false       -- prevents double queuing
+print("well i think it ran")
+-- Function that actually runs your script
+local function executeMainScript()
+    local success, err = pcall(function()
+        loadstring(game:HttpGet(SCRIPT_URL))()
+    end)
+    if not success then
+        warn("[TeleportLoader] Script execution failed: ", err)
+    else
+        print("[TeleportLoader] Main script loaded successfully.")
+    end
+end
+
+-- Run once immediately
+if ENABLED then
+    executeMainScript()
+end
+print("well i think it ran2")
+-- Check if executor supports queue_on_teleport
+local queueFunc = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport)
+if ENABLED and queueFunc then
+    -- Queue the script to run in the new server AFTER teleport
+    queueFunc('loadstring(game:HttpGet("' .. SCRIPT_URL .. '"))()')
+
+    -- Optional: listen to teleport state to avoid double‑queuing
+    local Players = game:GetService("Players")
+    local localPlayer = Players.LocalPlayer
+    if localPlayer and localPlayer.OnTeleport then
+        localPlayer.OnTeleport:Connect(function(state)
+            if state == Enum.TeleportState.InProgress and not hasQueued then
+                hasQueued = true
+                queueFunc('loadstring(game:HttpGet("' .. SCRIPT_URL .. '"))()')
+            elseif state == Enum.TeleportState.Completed then
+                hasQueued = false
+            end
+        end)
+    end
+elseif ENABLED then
+    warn("[TeleportLoader] queue_on_teleport not available. Script will NOT survive teleports.")
+end
+print("well i think it ran3")
