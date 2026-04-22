@@ -1,32 +1,46 @@
--- Paste your script URL here
+-- ============================================================
+-- TELEPORT PERSISTENCE TEST SCRIPT
+-- Prints a message. Should re-run automatically after teleport.
+-- ============================================================
+
+-- Detect queue_on_teleport (same as Infinite Yield)
+local queue_func
+if queue_on_teleport then
+    queue_func = queue_on_teleport
+elseif syn and syn.queue_on_teleport then
+    queue_func = syn.queue_on_teleport
+elseif fluxus and fluxus.queue_on_teleport then
+    queue_func = fluxus.queue_on_teleport
+end
+
+if queue_func then
+    print("[Teleport Test] queue_on_teleport detected – teleport persistence WILL work.")
+else
+    warn("[Teleport Test] queue_on_teleport NOT found – script will NOT survive teleports.")
+end
+
+-- Print the main message
+print("[Teleport Test] Script loaded! (Current server: " .. game.JobId .. ")")
+
+-- This is the URL of THIS SCRIPT (must be a raw pastebin link)
+-- ⬇️ CHANGE THIS TO THE RAW LINK OF THIS SCRIPT ⬇️
 local SCRIPT_URL = "https://raw.githubusercontent.com/Fluxincontroller/RandomStuff/refs/heads/main/reloadshi"
 
--- Print when the script initially runs
-print("[Teleport Persistence] Script loaded.")
-
--- Run the main script once
-loadstring(game:HttpGet(SCRIPT_URL))()
-
--- Teleport persistence (exactly as Infinite Yield does, with added prints)
+-- Set up teleport persistence (exactly as Infinite Yield does)
 local TeleportCheck = false
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- Detect which queue_on_teleport function exists
-local queueFunc = queue_on_teleport or (syn and syn.queue_on_teleport) or (fluxus and fluxus.queue_on_teleport) or queueteleport
-
-if LocalPlayer and LocalPlayer.OnTeleport and queueFunc then
+if LocalPlayer and LocalPlayer.OnTeleport and queue_func then
     LocalPlayer.OnTeleport:Connect(function(State)
         if not TeleportCheck then
             TeleportCheck = true
-            print("[Teleport Persistence] Teleport detected. Re-queueing script.")
-            queueFunc("loadstring(game:HttpGet('" .. SCRIPT_URL .. "'))()")
+            print("[Teleport Test] Teleport detected – re‑queuing script.")
+            queue_func("loadstring(game:HttpGet('" .. SCRIPT_URL .. "'))()")
         end
         if State == Enum.TeleportState.Completed then
             TeleportCheck = false
-            print("[Teleport Persistence] Teleport completed.")
+            print("[Teleport Test] Teleport completed.")
         end
     end)
-else
-    warn("[Teleport Persistence] queue_on_teleport not available. Script will NOT survive teleports.")
 end
